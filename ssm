@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+
+import typer
+from rich import print, console, table
+from src import auth, server, utils
+
+app = typer.Typer(help="Secure SSH Manager (ssm) by tegarimansyah")
+
+@app.command()
+def init():
+    '''
+    Initialize app and encryption key. Do this first if you don't have an account.
+    '''
+    print("[bold green]1. Create SSM directory in ~/.ssm[/bold green]")
+    utils.create_ssm_dir()
+    print("[bold green]2. Generate RSA private public key[/bold green]")
+    utils.create_rsa_private_public_key()
+    print("[bold green]3. Prepare server configuration and keys folder[/bold green]")
+    utils.create_server_configuration()
+
+@app.command()
+def login():
+    '''
+    Login and download ssh key and configuration
+    '''
+    token = auth.get_local_token()
+    if not token:
+        auth.login()
+    
+    user = token.get('active_token')
+    c = console.Console()
+    t = table.Table("Key", "Value")
+    t.add_row("Name", f'{user["profile"]["first_name"]} {user["profile"]["last_name"]}')
+    t.add_row("Id", user["id"])
+    c.print(t)
+
+@app.command()
+def add():
+    '''
+    Add new server configuration
+    '''
+    server.add_server()
+
+@app.command()
+def logout():
+    '''
+    Logout and delete all configuration
+    '''
+    auth.logout()
+
+@app.command()
+def ssh():
+    '''
+    Select server to connect
+    '''
+    ssh_servers = server.get_server_list()
+    ssh_server = server.select_server(ssh_servers)
+    server.run_ssh_command(**ssh_server)
+
+if __name__ == "__main__":
+    app()
