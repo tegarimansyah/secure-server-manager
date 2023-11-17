@@ -2,21 +2,10 @@
 
 import typer
 from rich import print, console, table
-from src import auth, server, utils
+from src import auth, server, utils, pangea
 
 app = typer.Typer(help="Secure SSH Manager (ssm) by tegarimansyah")
 
-@app.command()
-def init():
-    '''
-    Initialize app and encryption key. Do this first if you don't have an account.
-    '''
-    print("[bold green]1. Create SSM directory in ~/.ssm[/bold green]")
-    utils.create_ssm_dir()
-    print("[bold green]2. Generate RSA private public key[/bold green]")
-    utils.create_rsa_private_public_key()
-    print("[bold green]3. Prepare server configuration and keys folder[/bold green]")
-    utils.create_server_configuration()
 
 @app.command()
 def login():
@@ -26,7 +15,8 @@ def login():
     token = auth.get_local_token()
     if not token:
         auth.login()
-    
+        return
+        
     user = token.get('active_token')
     c = console.Console()
     t = table.Table("Key", "Value")

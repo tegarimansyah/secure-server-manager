@@ -1,6 +1,6 @@
 import os, json, typer, subprocess
 from rich import print
-from . import utils, web
+from . import utils, web, pangea
 
 def get_local_token():
    '''
@@ -18,6 +18,21 @@ def add_local_token(token):
   utils.create_ssm_dir()
   with open(os.path.expanduser('~/.ssm/credential'), 'w') as f:
     json.dump(token, f, indent=4)
+  
+  print(f"Getting Server Configuration")
+  with open(os.path.expanduser('~/.ssm/server.json'), 'w') as f:
+    server_config = pangea.get_server_config(token)
+    json.dump(server_config, f, indent=4)
+
+  print(f"Getting Secret Keys")
+  (utils.PROJECT_DIR / "keys").mkdir(parents=True, exist_ok=True)
+  private_key: dict
+  for private_key in pangea.get_private_keys(token):
+    filename = os.path.expanduser(f'~/.ssm/keys/{private_key.get("name")}')
+    with open(filename, 'w') as f:
+      f.write(private_key.get("secret"))
+    command = f"chmod 600 {filename}"
+    subprocess.run(command, shell=True)
 
 def open_login_web():
   '''

@@ -1,5 +1,5 @@
 import subprocess, questionary, json, os
-from . import utils
+from . import utils, pangea
 from rich import print
 
 def get_server_list():
@@ -27,15 +27,14 @@ def add_server():
         command = f"chmod 600 {str(utils.PROJECT_DIR)}/keys/{filename}"
         subprocess.run(command, shell=True, )
 
-        credential = f"~/keys/{filename}"
+        credential = f"~/.ssm/keys/{filename}"
         
     answer = {**answer, "credential": credential}
     with open(os.path.expanduser('~/.ssm/server.json'), 'r') as fr:
-        data = json.load(fr)
-        print(data)
+        data: list = json.load(fr)
         with open(os.path.expanduser('~/.ssm/server.json'), 'w') as fw:
-            print({**data, **answer})
-            json.dump({**data, **answer}, fw, indent=4)
+            data.append(answer)
+            json.dump(data, fw, indent=4)
             
     print("[bold green]Server configuration saved successfully[/bold green]")
 
@@ -44,7 +43,10 @@ def select_server(servers: list):
     server = list(filter(lambda server: server["name"] == choice, servers))[0]
     return server
     
-def run_ssh_command(key_path, username, server, **kwargs):
-    command = f"ssh -i {key_path} {username}@{server}"
-    print(f"Connecting to {kwargs.get('name')}: {command}")
-    subprocess.run(command, shell=True)
+def run_ssh_command(credential, credential_type, username, server, **kwargs):
+    if credential_type == "key_file":
+        command = f"ssh -i {credential} {username}@{server}"
+        print(f"Connecting to {kwargs.get('name')}: {command}")
+        subprocess.run(command, shell=True)
+    else:
+        print("Connect ssh via password is in progress")

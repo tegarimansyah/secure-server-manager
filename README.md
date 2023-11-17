@@ -1,6 +1,6 @@
 # Secure SSH Manager (SSM)
 
-Backup SSH configuration and server configuration.
+Backup SSH configuration and server configuration. Read this blog for the context https://blog.tegar.my.id/building-an-cli-for-streamlining-server-access-management-with-pangea-vault-and-authn
 
 ## How to Run
 
